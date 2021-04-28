@@ -51,7 +51,8 @@ def main(opt="O1"):
 
         optimizer.step()
 
-        return loss.item()
+        print(loss)
+        return loss
 
 
     trainer = Engine(train_step)

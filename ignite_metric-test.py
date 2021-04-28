@@ -43,6 +43,16 @@ def test():
             # (necessary because e_float16 was created in an autocasted region)
             mean_var.update(torch.rand(1).double())
     #assert m.item() == pytest.approx(y_true.mean().item())
+def test_apex():
+    try:
+        from apex import amp
+        APEX_AVAILABLE = True
+    except ModuleNotFoundError:
+        APEX_AVAILABLE = False
+
+    with amp.scale_loss(batch_loss, self.optimizer) as scaled_loss:
+        scaled_loss.backward()
+
 
 if __name__ == '__main__':
-    test()
+    test_apex()

@@ -7,9 +7,17 @@ import torch_xla.distributed.xla_multiprocessing as xmp
 
 
 def _mp_train(rank, world_size, backend):
-    print(xm.get_ordinal(), "- backend=", backend)
     device = xm.xla_device()
-    print(xm.get_ordinal(), " with seed ", torch.initial_seed())
+    print(
+        xm.get_ordinal(),
+        "- backend=",
+        backend,
+        "- world size",
+        xm.xrt_world_size(),
+        "- device",
+        device,
+        " with seed ", torch.initial_seed()
+    )
 
 
 if __name__ == "__main__":

@@ -24,10 +24,12 @@ class Net(nn.Module):
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x, dim=-1)
-#1 1 28 28
-#64 10
+
+
+# 1 1 28 28
+# 64 10
 def test():
-    mean_var = GeometricAverage(device='cuda')
+    mean_var = GeometricAverage(device="cuda")
     criterion = nn.CrossEntropyLoss()
     m = nn.LogSoftmax(dim=1)
     model = Net()
@@ -36,16 +38,19 @@ def test():
     with autocast():
         output = model(x)
         output_ref = torch.randint(3, 5, (64,)).to("cuda")
-        loss = criterion(output,output_ref)
+        loss = criterion(output, output_ref)
         mean_var.update(loss)
         with autocast(enabled=False):
             # Calls e_float16.float() to ensure float32 execution
             # (necessary because e_float16 was created in an autocasted region)
             mean_var.update(torch.rand(1).double())
-    #assert m.item() == pytest.approx(y_true.mean().item())
+    # assert m.item() == pytest.approx(y_true.mean().item())
+
+
 def test_apex():
     try:
         from apex import amp
+
         APEX_AVAILABLE = True
     except ModuleNotFoundError:
         APEX_AVAILABLE = False
@@ -54,5 +59,5 @@ def test_apex():
         scaled_loss.backward()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test_apex()

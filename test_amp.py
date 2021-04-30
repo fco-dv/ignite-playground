@@ -24,5 +24,5 @@ def test():
         g_float16 = torch.mm(d_float32, f_float32)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     test()

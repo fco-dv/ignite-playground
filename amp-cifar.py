@@ -12,6 +12,7 @@ from torchvision.models import wide_resnet50_2
 
 # from utils import get_train_eval_loaders
 
+
 class MockDataset(Dataset):
     def __init__(self, nb_samples=60, labels=100):
         self._labels = labels
@@ -61,15 +62,30 @@ def get_train_eval_loaders(batch_size=8):
     train_eval_dataset = MockDataset()
 
     train_loader = DataLoader(
-        train_dataset, batch_size=batch_size, num_workers=12, shuffle=True, drop_last=True, pin_memory=True
+        train_dataset,
+        batch_size=batch_size,
+        num_workers=12,
+        shuffle=True,
+        drop_last=True,
+        pin_memory=True,
     )
 
     test_loader = DataLoader(
-        test_dataset, batch_size=batch_size, num_workers=12, shuffle=False, drop_last=False, pin_memory=True
+        test_dataset,
+        batch_size=batch_size,
+        num_workers=12,
+        shuffle=False,
+        drop_last=False,
+        pin_memory=True,
     )
 
     eval_train_loader = DataLoader(
-        train_eval_dataset, batch_size=batch_size, num_workers=12, shuffle=False, drop_last=False, pin_memory=True
+        train_eval_dataset,
+        batch_size=batch_size,
+        num_workers=12,
+        shuffle=False,
+        drop_last=False,
+        pin_memory=True,
     )
 
     return train_loader, test_loader, eval_train_loader
@@ -77,12 +93,16 @@ def get_train_eval_loaders(batch_size=8):
 
 def main(batch_size=16, max_epochs=10):
     assert torch.cuda.is_available()
-    assert torch.backends.cudnn.enabled, "NVIDIA/Apex:Amp requires cudnn backend to be enabled."
+    assert (
+        torch.backends.cudnn.enabled
+    ), "NVIDIA/Apex:Amp requires cudnn backend to be enabled."
     # torch.backends.cudnn.benchmark = True
 
     device = "cuda"
 
-    train_loader, test_loader, eval_train_loader = get_train_eval_loaders(batch_size=batch_size)
+    train_loader, test_loader, eval_train_loader = get_train_eval_loaders(
+        batch_size=batch_size
+    )
 
     model = wide_resnet50_2(num_classes=100).to(device)
     optimizer = SGD(model.parameters(), lr=0.01)
@@ -110,24 +130,25 @@ def main(batch_size=16, max_epochs=10):
         return y_pred
 
     trainer = Engine(train_step)
-    metric = GeometricAverage(device='cuda')
+    metric = GeometricAverage(device="cuda")
     metric.attach(trainer, "Average")
     # ...
-    #train_loader_= [(torch.randn((3, 32, 32)), torch.randint(0, 100, (1,))) for _ in range(16)]
+    # train_loader_= [(torch.randn((3, 32, 32)), torch.randint(0, 100, (1,))) for _ in range(16)]
 
     def infinite_iterator(batch_size, nb_samples=1):
         for sample in range(nb_samples):
             batch_x = torch.rand(batch_size, 3, 32, 32)
-            batch_y = torch.randint( 0, 100, (batch_size,1,))
+            batch_y = torch.randint(0, 100, (batch_size, 1,))
             yield batch_x, batch_y
 
-    state = trainer.run(infinite_iterator(16,1))
-    print(state.metrics['Average'])
-    print(state.metrics['Average'].shape)
-    print(state.metrics['Average'].dtype)
+    state = trainer.run(infinite_iterator(16, 1))
+    print(state.metrics["Average"])
+    print(state.metrics["Average"].shape)
+    print(state.metrics["Average"].dtype)
 
-    metric.update(torch.randint( 0, 100, (1,)).to("cuda"))
+    metric.update(torch.randint(0, 100, (1,)).to("cuda"))
     metric.compute()
+
 
 if __name__ == "__main__":
     # fire.Fire(main)

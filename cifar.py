@@ -8,6 +8,7 @@ from ignite.metrics import Average
 from torch.utils.data import Dataset, DataLoader
 from torch.nn import NLLLoss
 
+
 class RndDataset(Dataset):
     def __init__(self, nb_samples=128, labels=100):
         self._labels = labels
@@ -21,9 +22,12 @@ class RndDataset(Dataset):
         y = torch.randint(0, 100, (1,)).item()
         return x, y
 
+
 def main(opt="O1"):
     assert torch.cuda.is_available()
-    assert torch.backends.cudnn.enabled, "NVIDIA/Apex:Amp requires cudnn backend to be enabled."
+    assert (
+        torch.backends.cudnn.enabled
+    ), "NVIDIA/Apex:Amp requires cudnn backend to be enabled."
     torch.backends.cudnn.benchmark = True
 
     device = "cuda"
@@ -52,7 +56,6 @@ def main(opt="O1"):
         optimizer.step()
 
         return loss.item()
-
 
     trainer = Engine(train_step)
     metric = Average()

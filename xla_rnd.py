@@ -37,6 +37,16 @@ def _mp_train(rank, world_size, backend):
         dataset, num_replicas=xm.xrt_world_size(), rank=xm.get_ordinal(),
     )
 
+    train_loader = torch.utils.data.DataLoader(
+        dataset,
+        batch_size=int(16 / xm.xrt_world_size()),
+        num_workers=1,
+        sampler=train_sampler,
+    )
+
+    # Specific xla
+    para_loader = pl.MpDeviceLoader(train_loader, device)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Torch Native - XLA")
     parser.add_argument("--backend", type=str, default="xla-tpu")

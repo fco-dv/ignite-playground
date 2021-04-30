@@ -6,14 +6,9 @@ import torch_xla.distributed.parallel_loader as pl
 import torch_xla.distributed.xla_multiprocessing as xmp
 
 
-def _mp_train(rank):
-    # Specific xla
-    print(
-        xm.get_ordinal(),
-        "- device",
-        xm.xla_device(),
-    )
-
+def _mp_train(rank, world_size, backend):
+    print(xm.get_ordinal(), "- backend=", backend)
+    device = xm.xla_device()
     print(xm.get_ordinal(), " with seed ", torch.initial_seed())
 
 
@@ -25,5 +20,6 @@ if __name__ == "__main__":
 
     assert args_parsed.backend == "xla-tpu"
 
+    args = (args_parsed.nproc_per_node, args_parsed.backend)
     # Specific xla
-    xmp.spawn(_mp_train, nprocs=args_parsed.nproc_per_node)
+    xmp.spawn(_mp_train, args=args, nprocs=args_parsed.nproc_per_node)

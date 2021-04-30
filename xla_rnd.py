@@ -4,7 +4,19 @@ import torch
 import torch_xla.core.xla_model as xm
 import torch_xla.distributed.parallel_loader as pl
 import torch_xla.distributed.xla_multiprocessing as xmp
+from torch.utils.data import Dataset
 
+class RndDataset(Dataset):
+    def __init__(self, nb_samples=128):
+        self._nb_samples = nb_samples
+
+    def __len__(self):
+        return self._nb_samples
+
+    def __getitem__(self, index):
+        x = torch.randn((3, 32, 32))
+        y = torch.randint(0, 100, (1,)).item()
+        return x, y
 
 def _mp_train(rank, world_size, backend):
     device = xm.xla_device()
@@ -18,7 +30,12 @@ def _mp_train(rank, world_size, backend):
         device,
         " with seed ", torch.initial_seed()
     )
-
+    #...
+    dataset  = RndDataset()
+    # Specific xla
+    train_sampler = torch.utils.data.distributed.DistributedSampler(
+        dataset, num_replicas=xm.xrt_world_size(), rank=xm.get_ordinal(),
+    )
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Torch Native - XLA")
